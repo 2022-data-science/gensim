@@ -1,9 +1,11 @@
 import json
+import logging
 import os.path
 import csv
 
 import jieba
 from gensim import corpora, models, similarities
+from gensim.models import word2vec
 from gensim.test.utils import common_texts
 
 
@@ -63,10 +65,7 @@ class data_science:
 
         reader = csv.DictReader(f)
         for line in reader:
-            # print(line['数据元'], line['字段中文（可忽略）'])
             text_set.add(line['数据元'])
-            # print(line['数据元'])
-            # text_list.append(jieba.lcut(line['字段中文（可忽略）']))
 
         text_list = []
         for i in text_set:
@@ -101,8 +100,10 @@ class data_science:
 
         # print(text_list_forv2W)
 
-        w2VModel = models.Word2Vec(sentences=text_list_forv2W, window=5, min_count=1, negative=1, sample=0.01, workers=4)
+        w2VModel = models.Word2Vec(text_list_forv2W, window=5, vector_size=250, workers=16, epochs=5, min_count=0)
         w2VModel.save('w2V_model.w2v')
+
+
 
 
     def word2Vec(self, s, topK):
@@ -124,24 +125,13 @@ class data_science:
 
 
 
-
-
-    # model = Word2Vec(sentences=test_list, vector_size=100, window=5, min_count=1, workers=4)
-    # model.save("word2vec.model")
-    #
-    #
-    # # print(model.wv.index_to_key)
-    # vector = model.wv["蚂蚁借呗等额还款可以换成先息后本吗"]
-    # sims = model.wv.most_similar("蚂蚁借呗等额还款可以换成先息后本吗", topn=10)
-    #
-    # print(sims)
-
-
 if __name__ == "__main__":
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     sb = data_science(is_load=False)
     sb.data_from_given()
 
     dsb = data_science(is_load=True)
     dsb.lsi("开户人公民身份号码", 10)
-    dsb.word2Vec("开户人公民身份号码", 10)
+    dsb.word2Vec("采深上限", 10)
+    print(dsb.w2VModel.wv.similarity("所在地", "所在地区"))
 
